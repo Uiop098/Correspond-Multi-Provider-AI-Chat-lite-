@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Correspond — AI Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14161f;
+    --paper: #ede6d6;
+    --paper-dim: #cfc6b0;
+    --teal: #5fa8a0;
+    --rust: #c1633d;
+    --line: #2a2e3a;
+    --panel: #1b1e29;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 1.5rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .brand {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .brand .dot { color: var(--rust); }
+
+  .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--paper-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+  }
+
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .empty {
+    margin: auto;
+    text-align: center;
+    color: var(--paper-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    max-width: 34ch;
+  }
+
+  .empty .mark {
+    display: block;
+    font-family: 'Fraunces', serif;
+    font-size: 2.2rem;
+    color: var(--paper);
+    margin-bottom: 0.5rem;
+  }
+
+  .msg {
+    display: flex;
+    flex-direction: column;
+    max-width: 88%;
+    animation: rise 0.35s ease;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg.user { align-self: flex-end; align-items: flex-end; }
+  .msg.ai { align-self: flex-start; align-items: flex-start; }
+
+  .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--paper-dim);
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .seal {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .msg.user .seal { background: var(--teal); }
+  .msg.ai .seal { background: var(--rust); }
+
+  .bubble {
+    padding: 0.85rem 1.05rem;
+    border-radius: 3px;
+    line-height: 1.55;
+    font-size: 0.95rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .msg.user .bubble {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-right: 2px solid var(--teal);
+  }
+
+  .msg.ai .bubble {
+    background: transparent;
+    border-left: 2px solid var(--rust);
+    padding-left: 1rem;
+    border-radius: 0;
+  }
+
+  .typing {
+    display: flex;
+    gap: 0.3rem;
+    padding: 0.5rem 0 0.5rem 1rem;
+    border-left: 2px solid var(--rust);
+  }
+
+  .typing span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--paper-dim);
+    animation: pulse 1.1s infinite ease-in-out;
+  }
+
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes pulse {
+    0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-2px); }
+  }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 1rem 1.25rem 1.4rem;
+  }
+
+  form {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-end;
+  }
+
+  textarea {
+    flex: 1;
+    resize: none;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 3px;
+    max-height: 140px;
+    line-height: 1.5;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  textarea:focus { border-color: var(--teal); }
+  textarea::placeholder { color: var(--paper-dim); }
+  textarea:disabled { opacity: 0.4; }
+
+  button {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: var(--teal);
+    color: var(--ink);
+    border: none;
+    padding: 0.85rem 1.1rem;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+    flex-shrink: 0;
+  }
+
+  button:hover { opacity: 0.88; }
+  button:active { transform: scale(0.97); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  button:focus-visible, textarea:focus-visible, input:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+  }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+  /* Key modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 22, 31, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    padding: 1.25rem;
+  }
+
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1.75rem;
+    max-width: 380px;
+    width: 100%;
+  }
+
+  .modal .mark {
+    font-family: 'Fraunces', serif;
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal p {
+    font-size: 0.85rem;
+    color: var(--paper-dim);
+    line-height: 1.55;
+    margin-bottom: 1.1rem;
+  }
+
+  .modal input {
+    width: 100%;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    color: var(--paper);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 3px;
+    outline: none;
+    margin-bottom: 0.5rem;
+    transition: border-color 0.15s ease;
+  }
+
+  .modal input:focus { border-color: var(--teal); }
+
+  .modal select {
+    width: 100%;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    color: var(--paper);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 3px;
+    outline: none;
+    margin-bottom: 0.75rem;
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--paper-dim) 50%), linear-gradient(135deg, var(--paper-dim) 50%, transparent 50%);
+    background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+
+  .modal select:focus { border-color: var(--teal); }
+
+  .modal label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--paper-dim);
+    margin-bottom: 0.4rem;
+  }
+
+  .modal .field { margin-bottom: 0.9rem; }
+  .modal .field.model-field { margin-bottom: 0.25rem; }
+  .modal .field.model-field input { margin-bottom: 0; }
+
+  .modal .error {
+    color: var(--rust);
+    font-size: 0.75rem;
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 1.2em;
+    margin-bottom: 0.75rem;
+  }
+
+  .modal button {
+    width: 100%;
+  }
+
+  .modal .hint {
+    margin-top: 1rem;
+    font-size: 0.72rem;
+    color: var(--paper-dim);
+    line-height: 1.6;
+  }
+
+  .modal .hint a { color: var(--teal); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .msg, .typing span { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="modal-backdrop" id="keyModal">
+  <div class="modal">
+    <div class="mark">✒ Correspond</div>
+    <p id="modalDesc">Pick a provider and paste your free API key to start. It's kept in this tab's memory only — never saved to disk, never sent anywhere but the provider you choose.</p>
+
+    <div class="field">
+      <label for="providerSelect">Provider</label>
+      <select id="providerSelect"></select>
+    </div>
+
+    <div class="field">
+      <label for="keyInput" id="keyLabel">API key</label>
+      <input type="password" id="keyInput" placeholder="" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="field model-field">
+      <label for="modelInput">Model <span style="opacity:.6;">(editable)</span></label>
+      <input type="text" id="modelInput" placeholder="" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="error" id="keyError"></div>
+    <button id="keySubmit" type="button">Start chatting</button>
+    <div class="hint" id="keyHint">No key yet? Get a free one at <a href="https://console.groq.com/keys" target="_blank" rel="noopener" id="keyUrlLink">console.groq.com/keys</a> — no credit card required.</div>
+  </div>
+</div>
+
+<header>
+  <div class="brand">Correspond<span class="dot">.</span></div>
+  <div class="subtitle" id="changeKeyBtn" title="Change provider or API key">groq · llama-3.3-70b</div>
+</header>
+
+<main id="thread">
+  <div class="empty" id="emptyState">
+    <span class="mark">✒</span>
+    Write the first line.<br>Everything after is a reply.
+  </div>
+</main>
+
+<footer>
+  <form id="composerForm">
+    <textarea id="composer" rows="1" placeholder="Say something…" disabled></textarea>
+    <button type="submit" id="sendBtn" disabled>Send</button>
+  </form>
+</footer>
+
+<script>
+  // ---- Provider registry ----------------------------------------------
+  // type "openai"  -> OpenAI-compatible /chat/completions (messages + choices[0].message.content)
+  // type "gemini"  -> Google Generative Language API (contents/parts, key as query param)
+  // type "cohere"  -> Cohere v2 /chat (messages + message.content[0].text)
+  const PROVIDERS = {
+    groq: {
+      name: 'Groq',
+      type: 'openai',
+      endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+      defaultModel: 'llama-3.3-70b-versatile',
+      keyPlaceholder: 'gsk_...',
+      keyPrefix: 'gsk_',
+      keyUrl: 'https://console.groq.com/keys',
+      keyUrlLabel: 'console.groq.com/keys',
+      note: "It's kept in this tab's memory only — never saved to disk, never sent anywhere but Groq."
+    },
+    gemini: {
+      name: 'Google Gemini',
+      type: 'gemini',
+      defaultModel: 'gemini-2.0-flash',
+      keyPlaceholder: 'AIzaSy... (or AQ...)',
+      keyPrefix: '',
+      keyUrl: 'https://aistudio.google.com/apikey',
+      keyUrlLabel: 'aistudio.google.com/apikey',
+      note: "It's kept in this tab's memory only — never saved to disk, never sent anywhere but Google."
+    },
+    openai: {
+      name: 'OpenAI',
+      type: 'openai',
+      endpoint: 'https://api.openai.com/v1/chat/completions',
+      defaultModel: 'gpt-4o-mini',
+      keyPlaceholder: 'sk-...',
+      keyPrefix: 'sk-',
+      keyUrl: 'https://platform.openai.com/api-keys',
+      keyUrlLabel: 'platform.openai.com/api-keys',
+      note: "New accounts get a small free trial credit; after that it's pay-as-you-go. Key is kept in this tab's memory only — never saved to disk, never sent anywhere but OpenAI."
+    },
+    openrouter: {
+      name: 'OpenRouter',
+      type: 'openai',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+      defaultModel: 'meta-llama/llama-3.1-8b-instruct:free',
+      keyPlaceholder: 'sk-or-v1-...',
+      keyPrefix: 'sk-or-',
+      keyUrl: 'https://openrouter.ai/keys',
+      keyUrlLabel: 'openrouter.ai/keys',
+      note: 'Model names ending in ":free" cost nothing. Key is kept in this tab only.'
+    },
+    together: {
+      name: 'Together AI',
+      type: 'openai',
+      endpoint: 'https://api.together.xyz/v1/chat/completions',
+      defaultModel: 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
+      keyPlaceholder: 'API key',
+      keyPrefix: '',
+      keyUrl: 'https://api.together.ai/settings/api-keys',
+      keyUrlLabel: 'api.together.ai/settings/api-keys',
+      note: "It's kept in this tab's memory only — never saved to disk, never sent anywhere but Together AI."
+    },
+    mistral: {
+      name: 'Mistral',
+      type: 'openai',
+      endpoint: 'https://api.mistral.ai/v1/chat/completions',
+      defaultModel: 'mistral-small-latest',
+      keyPlaceholder: 'API key',
+      keyPrefix: '',
+      keyUrl: 'https://console.mistral.ai/api-keys',
+      keyUrlLabel: 'console.mistral.ai/api-keys',
+      note: "It's kept in this tab's memory only — never saved to disk, never sent anywhere but Mistral."
+    },
+    cohere: {
+      name: 'Cohere',
+      type: 'cohere',
+      endpoint: 'https://api.cohere.com/v2/chat',
+      defaultModel: 'command-r-08-2024',
+      keyPlaceholder: 'API key',
+      keyPrefix: '',
+      keyUrl: 'https://dashboard.cohere.com/api-keys',
+      keyUrlLabel: 'dashboard.cohere.com/api-keys',
+      note: "It's kept in this tab's memory only — never saved to disk, never sent anywhere but Cohere."
+    }
+  };
+  const PROVIDER_ORDER = ['groq', 'gemini', 'openai', 'openrouter', 'together', 'mistral', 'cohere'];
+
+  const thread = document.getElementById('thread');
+  const emptyState = document.getElementById('emptyState');
+  const form = document.getElementById('composerForm');
+  const composer = document.getElementById('composer');
+  const sendBtn = document.getElementById('sendBtn');
+  const keyModal = document.getElementById('keyModal');
+  const keyInput = document.getElementById('keyInput');
+  const keyLabel = document.getElementById('keyLabel');
+  const modelInput = document.getElementById('modelInput');
+  const providerSelect = document.getElementById('providerSelect');
+  const keySubmit = document.getElementById('keySubmit');
+  const keyError = document.getElementById('keyError');
+  const changeKeyBtn = document.getElementById('changeKeyBtn');
+  const modalDesc = document.getElementById('modalDesc');
+  const keyHint = document.getElementById('keyHint');
+  const keyUrlLink = document.getElementById('keyUrlLink');
+  const subtitle = document.getElementById('changeKeyBtn');
+
+  let apiKey = null;
+  let providerId = 'groq';
+  let model = PROVIDERS.groq.defaultModel;
+  let history = [];
+
+  // Build provider dropdown
+  PROVIDER_ORDER.forEach(id => {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = PROVIDERS[id].name;
+    providerSelect.appendChild(opt);
+  });
+
+  function refreshModalForProvider(id) {
+    const p = PROVIDERS[id];
+    keyInput.placeholder = p.keyPlaceholder;
+    keyLabel.textContent = p.name + ' API key';
+    modelInput.placeholder = p.defaultModel;
+    modelInput.value = (providerId === id && model) ? model : p.defaultModel;
+    modalDesc.textContent = "Pick a provider and paste your free API key to start. " + p.note;
+    keyHint.innerHTML = `No key yet? Get a free one at <a href="${p.keyUrl}" target="_blank" rel="noopener">${p.keyUrlLabel}</a>.`;
+    keyError.textContent = '';
+  }
+
+  providerSelect.addEventListener('change', () => {
+    refreshModalForProvider(providerSelect.value);
+  });
+
+  function openKeyModal() {
+    keyModal.style.display = 'flex';
+    providerSelect.value = providerId;
+    keyInput.value = (apiKey && providerSelect.value === providerId) ? '' : '';
+    refreshModalForProvider(providerId);
+    setTimeout(() => keyInput.focus(), 50);
+  }
+
+  function closeKeyModal() {
+    keyModal.style.display = 'none';
+    composer.disabled = false;
+    sendBtn.disabled = false;
+    composer.focus();
+  }
+
+  keySubmit.addEventListener('click', () => {
+    const val = keyInput.value.trim();
+    const p = PROVIDERS[providerSelect.value];
+    if (val.length < 8 || (p.keyPrefix && !val.startsWith(p.keyPrefix))) {
+      keyError.textContent = p.keyPrefix
+        ? `That doesn't look like a ${p.name} key — it should start with "${p.keyPrefix}".`
+        : `That doesn't look like a valid ${p.name} key.`;
+      return;
+    }
+    providerId = providerSelect.value;
+    apiKey = val;
+    model = modelInput.value.trim() || p.defaultModel;
+    subtitle.textContent = providerId + ' · ' + model;
+    closeKeyModal();
+  });
+
+  keyInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') keySubmit.click();
+  });
+
+  changeKeyBtn.addEventListener('click', openKeyModal);
+
+  composer.addEventListener('input', () => {
+    composer.style.height = 'auto';
+    composer.style.height = Math.min(composer.scrollHeight, 140) + 'px';
+  });
+
+  composer.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  function addMessage(role, text) {
+    if (emptyState) emptyState.remove();
+    const msg = document.createElement('div');
+    msg.className = 'msg ' + role;
+    msg.innerHTML = `
+      <div class="label"><span class="seal"></span>${role === 'user' ? 'You' : 'Reply'}</div>
+      <div class="bubble"></div>
+    `;
+    msg.querySelector('.bubble').textContent = text;
+    thread.appendChild(msg);
+    thread.scrollTop = thread.scrollHeight;
+    return msg;
+  }
+
+  function addTyping() {
+    const msg = document.createElement('div');
+    msg.className = 'msg ai';
+    msg.id = 'typingIndicator';
+    msg.innerHTML = `
+      <div class="label"><span class="seal"></span>Reply</div>
+      <div class="typing"><span></span><span></span><span></span></div>
+    `;
+    thread.appendChild(msg);
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typingIndicator');
+    if (el) el.remove();
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = composer.value.trim();
+    if (!text || !apiKey) return;
+
+    addMessage('user', text);
+    history.push({ role: 'user', content: text });
+    composer.value = '';
+    composer.style.height = 'auto';
+    sendBtn.disabled = true;
+    addTyping();
+
+    try {
+      const p = PROVIDERS[providerId];
+      let url, headers, body;
+
+      if (p.type === 'gemini') {
+        url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        headers = { 'Content-Type': 'application/json' };
+        body = JSON.stringify({
+          contents: history.map(m => ({
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: m.content }]
+          }))
+        });
+      } else if (p.type === 'cohere') {
+        url = p.endpoint;
+        headers = {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + apiKey
+        };
+        body = JSON.stringify({ model: model, messages: history });
+      } else {
+        // OpenAI-compatible: groq, openrouter, together, mistral
+        url = p.endpoint;
+        headers = {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + apiKey
+        };
+        body = JSON.stringify({ model: model, messages: history });
+      }
+
+      const res = await fetch(url, { method: 'POST', headers, body });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        const msg = errBody.error?.message || errBody.message || ('HTTP ' + res.status);
+        throw new Error(msg);
+      }
+
+      const data = await res.json();
+      let replyText = '(empty response)';
+      if (p.type === 'gemini') {
+        replyText = data.candidates?.[0]?.content?.parts?.map(part => part.text).join('') ?? replyText;
+      } else if (p.type === 'cohere') {
+        replyText = data.message?.content?.[0]?.text ?? data.text ?? replyText;
+      } else {
+        replyText = data.choices?.[0]?.message?.content ?? replyText;
+      }
+
+      removeTyping();
+      addMessage('ai', replyText);
+      history.push({ role: 'assistant', content: replyText });
+    } catch (err) {
+      removeTyping();
+      addMessage('ai', 'Error reaching ' + PROVIDERS[providerId].name + ': ' + err.message);
+      console.error(err);
+    } finally {
+      sendBtn.disabled = false;
+      composer.focus();
+    }
+  });
+
+  openKeyModal();
+</script>
+
+</body>
+</html>
