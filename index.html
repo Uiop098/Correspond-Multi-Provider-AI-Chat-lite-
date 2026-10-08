@@ -3,681 +3,2533 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Correspond — AI Chat</title>
+<title>Correspond — Multi-Provider AI Chat & Arena</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Puter.js for free client-side AI inference -->
+<script src="https://js.puter.com/v2/"></script>
 <style>
   :root {
-    --ink: #14161f;
-    --paper: #ede6d6;
-    --paper-dim: #cfc6b0;
-    --teal: #5fa8a0;
-    --rust: #c1633d;
-    --line: #2a2e3a;
-    --panel: #1b1e29;
+    --bg-base: #0a0c13;
+    --bg-surface: #101422;
+    --bg-card: #161b2e;
+    --bg-card-hover: #1c233c;
+    --bg-input: #0d101c;
+    --border-subtle: #232942;
+    --border-bright: #3b456d;
+    --text-primary: #f3f5fc;
+    --text-secondary: #9aa5c4;
+    --text-muted: #626e91;
+    --teal: #14b8a6;
+    --teal-glow: rgba(20, 184, 166, 0.18);
+    --blue: #3b82f6;
+    --purple: #8b5cf6;
+    --amber: #f59e0b;
+    --rose: #f43f5e;
+    --emerald: #10b981;
+    --indigo: #6366f1;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --font-serif: 'Fraunces', serif;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html, body {
     height: 100%;
-    background: var(--ink);
-    color: var(--paper);
-    font-family: 'Inter', sans-serif;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
   }
 
   body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    overflow: hidden;
   }
 
+  /* ---- HEADER ---- */
   header {
-    padding: 1.5rem 1.25rem 1rem;
-    border-bottom: 1px solid var(--line);
+    background: rgba(16, 20, 34, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0.75rem 1.25rem;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 1rem;
+    z-index: 20;
+    flex-shrink: 0;
+  }
+
+  .brand-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
   }
 
   .brand {
-    font-family: 'Fraunces', serif;
-    font-size: 1.5rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-  }
-
-  .brand .dot { color: var(--rust); }
-
-  .subtitle {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--paper-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #fff;
     cursor: pointer;
   }
 
+  .brand-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--teal);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--teal);
+    display: inline-block;
+  }
+
+  .badge-tag {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-free {
+    background: rgba(20, 184, 166, 0.15);
+    color: var(--teal);
+    border: 1px solid rgba(20, 184, 166, 0.35);
+  }
+
+  .badge-byok {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--purple);
+    border: 1px solid rgba(139, 92, 246, 0.35);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* Controls and buttons */
+  .btn {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+
+  .btn:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-bright);
+    color: #fff;
+  }
+
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: var(--teal);
+    color: #061e1b;
+    border-color: var(--teal);
+    font-weight: 600;
+  }
+
+  .btn-primary:hover {
+    background: #2dd4bf;
+    border-color: #2dd4bf;
+    color: #031412;
+    box-shadow: 0 0 14px var(--teal-glow);
+  }
+
+  .btn-danger:hover {
+    border-color: var(--rose);
+    color: var(--rose);
+  }
+
+  .btn-active {
+    background: rgba(20, 184, 166, 0.18);
+    border-color: var(--teal);
+    color: var(--teal);
+  }
+
+  /* Chat mode switcher pill */
+  .mode-pill-group {
+    display: flex;
+    background: var(--bg-base);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 2px;
+  }
+
+  .mode-pill-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .mode-pill-btn.active {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+
+  /* ---- SUBBAR: ACTIVE MODELS & CHECKBOX TRIGGER ---- */
+  .subbar {
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0.5rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+
+  .subbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+
+  .model-chip-list {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .model-chip {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 0.2rem 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .model-chip .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+  }
+
+  .model-chip .remove-chip {
+    cursor: pointer;
+    opacity: 0.6;
+    margin-left: 2px;
+  }
+  .model-chip .remove-chip:hover { opacity: 1; color: var(--rose); }
+
+  /* ---- MAIN CONTENT ---- */
   main {
     flex: 1;
     overflow-y: auto;
     padding: 1.5rem 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 1.1rem;
-    max-width: 720px;
+    gap: 1.5rem;
+    max-width: 1200px;
     width: 100%;
     margin: 0 auto;
+    scroll-behavior: smooth;
   }
 
-  .empty {
+  /* Empty state */
+  .empty-hero {
     margin: auto;
     text-align: center;
-    color: var(--paper-dim);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.85rem;
-    line-height: 1.7;
-    max-width: 34ch;
-  }
-
-  .empty .mark {
-    display: block;
-    font-family: 'Fraunces', serif;
-    font-size: 2.2rem;
-    color: var(--paper);
-    margin-bottom: 0.5rem;
-  }
-
-  .msg {
+    max-width: 680px;
+    padding: 2.5rem 1rem;
     display: flex;
     flex-direction: column;
-    max-width: 88%;
-    animation: rise 0.35s ease;
+    align-items: center;
+    gap: 1.25rem;
+    animation: fadeIn 0.4s ease;
   }
 
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(6px); }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .msg.user { align-self: flex-end; align-items: flex-end; }
-  .msg.ai { align-self: flex-start; align-items: flex-start; }
+  .hero-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(20,184,166,0.2), rgba(139,92,246,0.2));
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
 
-  .label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--paper-dim);
-    margin-bottom: 0.35rem;
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .hero-desc {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 520px;
+  }
+
+  .hero-features {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero-feat-tag {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     gap: 0.4rem;
   }
 
-  .seal {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    display: inline-block;
+  .hero-prompts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: 0.75rem;
   }
 
-  .msg.user .seal { background: var(--teal); }
-  .msg.ai .seal { background: var(--rust); }
-
-  .bubble {
-    padding: 0.85rem 1.05rem;
-    border-radius: 3px;
-    line-height: 1.55;
-    font-size: 0.95rem;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
-
-  .msg.user .bubble {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-right: 2px solid var(--teal);
-  }
-
-  .msg.ai .bubble {
-    background: transparent;
-    border-left: 2px solid var(--rust);
-    padding-left: 1rem;
-    border-radius: 0;
-  }
-
-  .typing {
+  .prompt-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
     display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .prompt-card:hover {
+    border-color: var(--teal);
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+  }
+
+  .prompt-card strong {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+  }
+
+  /* ---- MESSAGE THREAD ---- */
+  .msg-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* User Message */
+  .user-msg-row {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .user-bubble {
+    background: linear-gradient(135deg, #1e2642, #181d33);
+    border: 1px solid var(--border-bright);
+    border-right: 3px solid var(--teal);
+    border-radius: var(--radius-md) var(--radius-md) 2px var(--radius-md);
+    padding: 0.85rem 1.15rem;
+    max-width: 80%;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #fff;
+    white-space: pre-wrap;
+    word-break: break-word;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  }
+
+  .user-meta {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-bottom: 0.3rem;
+    text-align: right;
+  }
+
+  /* AI Responses Container: Single vs Multi Grid */
+  .ai-response-container {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .ai-response-container.grid-1 { grid-template-columns: 1fr; }
+  .ai-response-container.grid-2 { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+  .ai-response-container.grid-3 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+
+  @media (max-width: 768px) {
+    .ai-response-container.grid-2,
+    .ai-response-container.grid-3 {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* Individual Model Response Card */
+  .ai-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    transition: border-color 0.2s ease;
+  }
+
+  .ai-card:hover {
+    border-color: var(--border-bright);
+  }
+
+  .ai-card-header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0.6rem 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .ai-card-model {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .model-badge {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .badge-google { background: rgba(59, 130, 246, 0.18); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .badge-openai { background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+  .badge-anthropic { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .badge-deepseek { background: rgba(139, 92, 246, 0.18); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+  .badge-groq { background: rgba(244, 63, 94, 0.18); color: #fb7185; border: 1px solid rgba(244,63,94,0.3); }
+  .badge-openrouter { background: rgba(20, 184, 166, 0.18); color: #2dd4bf; border: 1px solid rgba(20,184,166,0.3); }
+  .badge-public { background: rgba(99, 102, 241, 0.18); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+
+  .ai-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.68rem;
+  }
+
+  .status-pill.loading {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--amber);
+  }
+
+  .status-pill.done {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--emerald);
+  }
+
+  .status-pill.error {
+    background: rgba(244, 63, 94, 0.15);
+    color: var(--rose);
+  }
+
+  .ai-card-body {
+    padding: 1rem 1.15rem;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--text-primary);
+    overflow-x: auto;
+    flex: 1;
+  }
+
+  /* Skeleton / Thinking indicator */
+  .thinking-indicator {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.5rem 0;
+  }
+
+  .skeleton-line {
+    height: 12px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #181d30 25%, #252d4b 50%, #181d30 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Formatted Markdown Content */
+  .ai-card-body h1, .ai-card-body h2, .ai-card-body h3, .ai-card-body h4 {
+    color: #fff;
+    margin-top: 0.8rem;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+  .ai-card-body h1 { font-size: 1.3rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.3rem; }
+  .ai-card-body h2 { font-size: 1.15rem; }
+  .ai-card-body h3 { font-size: 1rem; }
+  .ai-card-body p { margin-bottom: 0.75rem; }
+  .ai-card-body p:last-child { margin-bottom: 0; }
+  .ai-card-body ul, .ai-card-body ol { margin-left: 1.4rem; margin-bottom: 0.75rem; }
+  .ai-card-body li { margin-bottom: 0.25rem; }
+  .ai-card-body blockquote {
+    border-left: 3px solid var(--teal);
+    padding-left: 0.85rem;
+    margin: 0.75rem 0;
+    color: var(--text-secondary);
+    font-style: italic;
+    background: rgba(20, 184, 166, 0.05);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+  .ai-card-body code {
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    color: #38bdf8;
+  }
+  .ai-card-body pre {
+    background: #090b12;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1rem;
+    margin: 0.85rem 0;
+    overflow-x: auto;
+    position: relative;
+  }
+  .ai-card-body pre code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: #f1f5f9;
+    font-size: 0.84em;
+    line-height: 1.5;
+    display: block;
+  }
+  .code-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #111522;
+    padding: 0.35rem 0.85rem;
+    margin: -0.85rem -1rem 0.65rem -1rem;
+    border-bottom: 1px solid var(--border-subtle);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+  .copy-code-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
     gap: 0.3rem;
-    padding: 0.5rem 0 0.5rem 1rem;
-    border-left: 2px solid var(--rust);
+  }
+  .copy-code-btn:hover { color: var(--teal); }
+
+  .ai-card-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.85rem 0;
+    font-size: 0.85rem;
+  }
+  .ai-card-body th, .ai-card-body td {
+    border: 1px solid var(--border-subtle);
+    padding: 0.45rem 0.75rem;
+    text-align: left;
+  }
+  .ai-card-body th {
+    background: var(--bg-card);
+    color: #fff;
+    font-weight: 600;
   }
 
-  .typing span {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--paper-dim);
-    animation: pulse 1.1s infinite ease-in-out;
-  }
-
-  .typing span:nth-child(2) { animation-delay: 0.15s; }
-  .typing span:nth-child(3) { animation-delay: 0.3s; }
-
-  @keyframes pulse {
-    0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
-    30% { opacity: 1; transform: translateY(-2px); }
-  }
-
+  /* ---- FOOTER COMPOSER ---- */
   footer {
-    border-top: 1px solid var(--line);
-    padding: 1rem 1.25rem 1.4rem;
+    background: rgba(16, 20, 34, 0.92);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border-subtle);
+    padding: 0.75rem 1.25rem 1rem;
+    flex-shrink: 0;
+    z-index: 20;
   }
 
-  form {
-    max-width: 720px;
+  .composer-wrapper {
+    max-width: 1000px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .composer-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 0 0.25rem;
+  }
+
+  .active-model-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .composer-form {
     display: flex;
     gap: 0.6rem;
     align-items: flex-end;
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.6rem 0.5rem 0.9rem;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .composer-form:focus-within {
+    border-color: var(--teal);
+    box-shadow: 0 0 16px rgba(20, 184, 166, 0.15);
   }
 
   textarea {
     flex: 1;
     resize: none;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    color: var(--paper);
-    font-family: 'Inter', sans-serif;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
     font-size: 0.95rem;
-    padding: 0.75rem 0.9rem;
-    border-radius: 3px;
-    max-height: 140px;
+    padding: 0.35rem 0;
+    max-height: 160px;
+    min-height: 26px;
     line-height: 1.5;
     outline: none;
-    transition: border-color 0.15s ease;
   }
 
-  textarea:focus { border-color: var(--teal); }
-  textarea::placeholder { color: var(--paper-dim); }
-  textarea:disabled { opacity: 0.4; }
+  textarea::placeholder { color: var(--text-muted); }
 
-  button {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+  .send-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .composer-send-btn {
     background: var(--teal);
-    color: var(--ink);
+    color: #05201d;
     border: none;
-    padding: 0.85rem 1.1rem;
-    border-radius: 3px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: opacity 0.15s ease, transform 0.1s ease;
-    flex-shrink: 0;
-  }
-
-  button:hover { opacity: 0.88; }
-  button:active { transform: scale(0.97); }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  button:focus-visible, textarea:focus-visible, input:focus-visible {
-    outline: 2px solid var(--teal);
-    outline-offset: 2px;
-  }
-
-  ::-webkit-scrollbar { width: 8px; }
-  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
-
-  /* Key modal */
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(20, 22, 31, 0.92);
+    border-radius: var(--radius-sm);
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .composer-send-btn:hover {
+    background: #2dd4bf;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 10px var(--teal-glow);
+  }
+
+  .composer-send-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .composer-stop-btn {
+    background: rgba(244, 63, 94, 0.2);
+    border: 1px solid var(--rose);
+    color: var(--rose);
+    border-radius: var(--radius-sm);
+    padding: 0.45rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .composer-stop-btn:hover {
+    background: var(--rose);
+    color: #fff;
+  }
+
+  /* ---- MODALS & DRAWERS ---- */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 8, 14, 0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
     padding: 1.25rem;
   }
 
+  .modal-backdrop.open { display: flex; }
+
   .modal {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    padding: 1.75rem;
-    max-width: 380px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+    max-width: 600px;
     width: 100%;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    animation: modalPop 0.2s ease;
+    overflow: hidden;
   }
 
-  .modal .mark {
-    font-family: 'Fraunces', serif;
-    font-size: 1.6rem;
-    margin-bottom: 0.5rem;
+  @keyframes modalPop {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
   }
 
-  .modal p {
-    font-size: 0.85rem;
-    color: var(--paper-dim);
-    line-height: 1.55;
-    margin-bottom: 1.1rem;
+  .modal-header {
+    padding: 1.15rem 1.4rem;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  .modal input {
-    width: 100%;
-    background: var(--ink);
-    border: 1px solid var(--line);
-    color: var(--paper);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.85rem;
-    padding: 0.75rem 0.9rem;
-    border-radius: 3px;
-    outline: none;
-    margin-bottom: 0.5rem;
-    transition: border-color 0.15s ease;
+  .modal-title {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
-  .modal input:focus { border-color: var(--teal); }
-
-  .modal select {
-    width: 100%;
-    background: var(--ink);
-    border: 1px solid var(--line);
-    color: var(--paper);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.8rem;
-    padding: 0.7rem 0.9rem;
-    border-radius: 3px;
-    outline: none;
-    margin-bottom: 0.75rem;
-    appearance: none;
-    background-image: linear-gradient(45deg, transparent 50%, var(--paper-dim) 50%), linear-gradient(135deg, var(--paper-dim) 50%, transparent 50%);
-    background-position: calc(100% - 18px) center, calc(100% - 13px) center;
-    background-size: 5px 5px, 5px 5px;
-    background-repeat: no-repeat;
+  .modal-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.3rem;
     cursor: pointer;
-    transition: border-color 0.15s ease;
+    padding: 0.2rem;
+    line-height: 1;
   }
 
-  .modal select:focus { border-color: var(--teal); }
+  .modal-close-btn:hover { color: #fff; }
 
-  .modal label {
-    display: block;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
+  .modal-body {
+    padding: 1.25rem 1.4rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    font-size: 0.88rem;
+  }
+
+  .modal-footer {
+    padding: 0.9rem 1.4rem;
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  /* Form Elements in Modal */
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .field-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--paper-dim);
-    margin-bottom: 0.4rem;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  .modal .field { margin-bottom: 0.9rem; }
-  .modal .field.model-field { margin-bottom: 0.25rem; }
-  .modal .field.model-field input { margin-bottom: 0; }
-
-  .modal .error {
-    color: var(--rust);
-    font-size: 0.75rem;
-    font-family: 'IBM Plex Mono', monospace;
-    min-height: 1.2em;
-    margin-bottom: 0.75rem;
-  }
-
-  .modal button {
+  .input-text, .input-select, .input-textarea {
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: border-color 0.15s ease;
     width: 100%;
   }
 
-  .modal .hint {
-    margin-top: 1rem;
+  .input-text:focus, .input-select:focus, .input-textarea:focus {
+    border-color: var(--teal);
+  }
+
+  /* Model Checkbox Drawer */
+  .model-drawer-modal {
+    max-width: 840px;
+    width: 95%;
+  }
+
+  .drawer-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+
+  .filter-tab {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .filter-tab:hover {
+    color: var(--text-primary);
+    border-color: var(--border-bright);
+  }
+
+  .filter-tab.active {
+    background: rgba(20, 184, 166, 0.15);
+    border-color: var(--teal);
+    color: var(--teal);
+  }
+
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.65rem;
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .model-select-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 0.85rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    user-select: none;
+  }
+
+  .model-select-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-bright);
+  }
+
+  .model-select-card.checked {
+    border-color: var(--teal);
+    background: rgba(20, 184, 166, 0.08);
+  }
+
+  .model-select-card input[type="checkbox"] {
+    margin-top: 3px;
+    accent-color: var(--teal);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  .model-info-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .model-title-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem;
+  }
+
+  .model-name {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .model-desc-text {
     font-size: 0.72rem;
-    color: var(--paper-dim);
-    line-height: 1.6;
+    color: var(--text-secondary);
+    line-height: 1.35;
   }
 
-  .modal .hint a { color: var(--teal); }
-
-  @media (prefers-reduced-motion: reduce) {
-    .msg, .typing span { animation: none; }
+  .model-badges-row {
+    display: flex;
+    gap: 0.3rem;
+    margin-top: 0.3rem;
+    flex-wrap: wrap;
   }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    bottom: 85px;
+    right: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    color: #fff;
+    padding: 0.65rem 1.1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    z-index: 120;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.25s ease;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
 </style>
 </head>
 <body>
 
-<div class="modal-backdrop" id="keyModal">
-  <div class="modal">
-    <div class="mark">✒ Correspond</div>
-    <p id="modalDesc">Pick a provider and paste your free API key to start. It's kept in this tab's memory only — never saved to disk, never sent anywhere but the provider you choose.</p>
+<!-- TOP HEADER -->
+<header>
+  <div class="brand-group">
+    <div class="brand" id="brandLogo" title="Correspond — Multi-Provider AI Chat">
+      <span>Correspond</span><span class="brand-dot"></span>
+    </div>
+    <span class="badge-tag badge-free" id="modeStatusBadge">⚡ Free Public Mode</span>
+  </div>
 
-    <div class="field">
-      <label for="providerSelect">Provider</label>
-      <select id="providerSelect"></select>
+  <div class="header-actions">
+    <!-- Chat Mode Switcher: Single vs Multi-Model Compare -->
+    <div class="mode-pill-group" title="Toggle Single Model or Multi-Model Side-by-Side Arena">
+      <button class="mode-pill-btn active" id="singleModeBtn">
+        <span>💬 Single</span>
+      </button>
+      <button class="mode-pill-btn" id="multiModeBtn">
+        <span>🔀 Compare Arena</span>
+      </button>
     </div>
 
-    <div class="field">
-      <label for="keyInput" id="keyLabel">API key</label>
-      <input type="password" id="keyInput" placeholder="" autocomplete="off" spellcheck="false">
-    </div>
+    <!-- Mode Selector: Free Public vs BYOK -->
+    <button class="btn" id="modeSwitchBtn" title="Switch between Free Direct AI and Custom API Keys">
+      <span id="modeSwitchIcon">🔑</span>
+      <span id="modeSwitchText">Use API Keys</span>
+    </button>
 
-    <div class="field model-field">
-      <label for="modelInput">Model <span style="opacity:.6;">(editable)</span></label>
-      <input type="text" id="modelInput" placeholder="" autocomplete="off" spellcheck="false">
-    </div>
+    <!-- Configure Models Checkbox Button -->
+    <button class="btn btn-primary" id="openModelsBtn" title="Choose which models to chat with or compare">
+      <span>☑ Select Models</span>
+      <span class="badge-tag badge-free" id="selectedCountBadge" style="padding:1px 5px; font-size:0.6rem;">1</span>
+    </button>
 
-    <div class="error" id="keyError"></div>
-    <button id="keySubmit" type="button">Start chatting</button>
-    <div class="hint" id="keyHint">No key yet? Get a free one at <a href="https://console.groq.com/keys" target="_blank" rel="noopener" id="keyUrlLink">console.groq.com/keys</a> — no credit card required.</div>
+    <!-- Action Dropdown / Buttons -->
+    <button class="btn" id="systemPromptBtn" title="Set System Prompt Instructions">
+      <span>⚙ Persona</span>
+    </button>
+
+    <button class="btn" id="exportBtn" title="Export Chat History">
+      <span>📥 Export</span>
+    </button>
+
+    <button class="btn btn-danger" id="clearChatBtn" title="Clear current conversation">
+      <span>🧹 Clear</span>
+    </button>
+  </div>
+</header>
+
+<!-- SUBBAR: CURRENT SELECTION & QUICK ACTIONS -->
+<div class="subbar">
+  <div class="subbar-left">
+    <span style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; font-family:var(--font-mono);">
+      Querying:
+    </span>
+    <div class="model-chip-list" id="activeModelChips">
+      <!-- Injected via JS -->
+    </div>
+  </div>
+  <div class="subbar-right">
+    <button class="btn" id="quickArenaPresetBtn" style="padding:0.25rem 0.65rem; font-size:0.72rem;">
+      ⚡ Compare Top 3
+    </button>
   </div>
 </div>
 
-<header>
-  <div class="brand">Correspond<span class="dot">.</span></div>
-  <div class="subtitle" id="changeKeyBtn" title="Change provider or API key">groq · llama-3.3-70b</div>
-</header>
+<!-- MAIN CHAT CONTAINER -->
+<main id="chatThread">
+  <div class="empty-hero" id="emptyHero">
+    <div class="hero-icon">🖋️</div>
+    <h1 class="hero-title">Correspond AI Arena</h1>
+    <p class="hero-desc">
+      Chat directly with modern AI models <strong>100% free with zero API keys</strong>, or configure your keys for <strong>Google Gemini 2.5, OpenAI, DeepSeek, and Anthropic</strong>. Select multiple models with checkboxes to compare responses side-by-side!
+    </p>
 
-<main id="thread">
-  <div class="empty" id="emptyState">
-    <span class="mark">✒</span>
-    Write the first line.<br>Everything after is a reply.
+    <div class="hero-features">
+      <div class="hero-feat-tag"><span>⚡</span> Free Instant Chat (No Key)</div>
+      <div class="hero-feat-tag"><span>🔀</span> Side-by-Side Model Arena</div>
+      <div class="hero-feat-tag"><span>✨</span> Google Gemini 2.5 Pro & Flash</div>
+      <div class="hero-feat-tag"><span>🧠</span> DeepSeek R1 & V3</div>
+      <div class="hero-feat-tag"><span>🔒</span> 100% Client-Side Privacy</div>
+    </div>
+
+    <div class="hero-prompts">
+      <div class="prompt-card" onclick="insertPrompt('Explain the key differences between TCP and UDP in 3 concise bullet points.')">
+        <strong>🌐 Networking Core</strong>
+        <span>Explain TCP vs UDP in 3 concise bullet points.</span>
+      </div>
+      <div class="prompt-card" onclick="insertPrompt('Write a clean JavaScript function that debounces user input with TypeScript types.')">
+        <strong>💻 Code Assistant</strong>
+        <span>Write a TypeScript debounce function with clean comments.</span>
+      </div>
+      <div class="prompt-card" onclick="insertPrompt('Compare the philosophy of Stoicism vs Existentialism in 2 short paragraphs.')">
+        <strong>🧠 Philosophy Arena</strong>
+        <span>Compare Stoicism vs Existentialism side-by-side.</span>
+      </div>
+      <div class="prompt-card" onclick="insertPrompt('What are 3 practical, high-impact tips for building scalable web apps in 2026?')">
+        <strong>🚀 System Architecture</strong>
+        <span>3 practical high-impact tips for scalable web apps.</span>
+      </div>
+    </div>
   </div>
 </main>
 
+<!-- FOOTER COMPOSER -->
 <footer>
-  <form id="composerForm">
-    <textarea id="composer" rows="1" placeholder="Say something…" disabled></textarea>
-    <button type="submit" id="sendBtn" disabled>Send</button>
-  </form>
+  <div class="composer-wrapper">
+    <div class="composer-meta">
+      <div class="active-model-indicator" id="footerModelIndicator">
+        <span>⚡ Ready to generate with selected models</span>
+      </div>
+      <div class="char-counter" id="charCounter">0 characters</div>
+    </div>
+
+    <form class="composer-form" id="composerForm">
+      <textarea id="composerInput" rows="1" placeholder="Type a message… (Shift+Enter for new line, Enter to send)" autocomplete="off" spellcheck="true"></textarea>
+      <div class="send-btn-group">
+        <button type="button" class="composer-stop-btn" id="stopGenBtn" title="Stop generating">
+          <span>⏹ Stop</span>
+        </button>
+        <button type="submit" class="composer-send-btn" id="sendBtn" title="Send message">
+          <span>➤</span>
+        </button>
+      </div>
+    </form>
+  </div>
 </footer>
 
+<!-- ==================== MODALS ==================== -->
+
+<!-- 1. MODEL CHECKBOX DRAWER MODAL -->
+<div class="modal-backdrop" id="modelsModal">
+  <div class="modal model-drawer-modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span>☑ Model Selector & Arena Checkboxes</span>
+      </div>
+      <button class="modal-close-btn" id="closeModelsModalBtn">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Search & Filters -->
+      <div class="drawer-filter-bar">
+        <input type="text" class="input-text" id="modelSearchInput" placeholder="🔍 Search models (e.g. Gemini, DeepSeek, Claude, Free)..." style="max-width:300px; padding:0.4rem 0.75rem;">
+        <button class="filter-tab active" data-filter="all">All Models</button>
+        <button class="filter-tab" data-filter="free">⚡ Free (No Key)</button>
+        <button class="filter-tab" data-filter="google">Google Gemini</button>
+        <button class="filter-tab" data-filter="openai">OpenAI</button>
+        <button class="filter-tab" data-filter="deepseek">DeepSeek</button>
+        <button class="filter-tab" data-filter="anthropic">Anthropic</button>
+        <button class="filter-tab" data-filter="groq">Groq</button>
+      </div>
+
+      <!-- Quick action presets -->
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; font-size:0.75rem; align-items:center;">
+        <span style="color:var(--text-muted);">Quick Presets:</span>
+        <button class="btn" id="presetSelectFreeAll" style="padding:0.2rem 0.55rem; font-size:0.72rem;">Check All Free</button>
+        <button class="btn" id="presetSelectTopArena" style="padding:0.2rem 0.55rem; font-size:0.72rem;">Top 3 Arena</button>
+        <button class="btn" id="presetSelectGoogle" style="padding:0.2rem 0.55rem; font-size:0.72rem;">Google Gemini Suite</button>
+        <button class="btn btn-danger" id="presetClearSelection" style="padding:0.2rem 0.55rem; font-size:0.72rem;">Clear All</button>
+      </div>
+
+      <!-- Model Checkbox Cards Container -->
+      <div class="model-grid" id="modelsGridContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div style="font-size:0.8rem; color:var(--text-secondary);">
+        <strong id="modalSelectedCountText">1</strong> model(s) selected
+      </div>
+      <button class="btn btn-primary" id="saveModelsModalBtn">Apply & Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. API KEYS & PROVIDER MODAL -->
+<div class="modal-backdrop" id="keysModal">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span>🔑 Configure Custom API Keys</span>
+      </div>
+      <button class="modal-close-btn" id="closeKeysModalBtn">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <p style="color:var(--text-secondary); font-size:0.82rem; line-height:1.5;">
+        Provide your keys to connect directly to official providers. Your keys remain strictly inside your browser memory or encrypted local storage—never passed through any intermediate server.
+      </p>
+
+      <div class="field-group">
+        <label class="field-label">
+          <span>Google Gemini API Key</span>
+          <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--teal); text-decoration:none;">Get free Gemini key ↗</a>
+        </label>
+        <input type="password" class="input-text" id="keyGoogle" placeholder="AIzaSy...">
+        <span style="font-size:0.7rem; color:var(--text-muted);">Supports Gemini 2.5 Pro, 2.5 Flash, 2.0 Flash, 1.5 Pro</span>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">
+          <span>Groq API Key</span>
+          <a href="https://console.groq.com/keys" target="_blank" rel="noopener" style="color:var(--teal); text-decoration:none;">Get free Groq key ↗</a>
+        </label>
+        <input type="password" class="input-text" id="keyGroq" placeholder="gsk_...">
+        <span style="font-size:0.7rem; color:var(--text-muted);">Ultra-fast LLaMA 3.3 70B & DeepSeek R1 Distill</span>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">
+          <span>OpenAI API Key</span>
+          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" style="color:var(--teal); text-decoration:none;">OpenAI dashboard ↗</a>
+        </label>
+        <input type="password" class="input-text" id="keyOpenAI" placeholder="sk-...">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">
+          <span>DeepSeek API Key</span>
+          <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener" style="color:var(--teal); text-decoration:none;">DeepSeek platform ↗</a>
+        </label>
+        <input type="password" class="input-text" id="keyDeepSeek" placeholder="sk-...">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">
+          <span>Anthropic API Key</span>
+          <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" style="color:var(--teal); text-decoration:none;">Anthropic console ↗</a>
+        </label>
+        <input type="password" class="input-text" id="keyAnthropic" placeholder="sk-ant-...">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">
+          <span>OpenRouter API Key</span>
+          <a href="https://openrouter.ai/keys" target="_blank" rel="noopener" style="color:var(--teal); text-decoration:none;">OpenRouter keys ↗</a>
+        </label>
+        <input type="password" class="input-text" id="keyOpenRouter" placeholder="sk-or-v1-...">
+      </div>
+
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.4rem;">
+        <input type="checkbox" id="rememberKeysCheckbox" style="accent-color:var(--teal);" checked>
+        <label for="rememberKeysCheckbox" style="font-size:0.78rem; color:var(--text-secondary); cursor:pointer;">
+          Remember keys in this browser's local storage
+        </label>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="clearAllKeysBtn">Remove Stored Keys</button>
+      <button class="btn btn-primary" id="saveKeysBtn">Save & Activate</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. SYSTEM PROMPT / PERSONA MODAL -->
+<div class="modal-backdrop" id="systemPromptModal">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span>⚙ Custom Persona & System Prompt</span>
+      </div>
+      <button class="modal-close-btn" id="closeSystemPromptModalBtn">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <p style="color:var(--text-secondary); font-size:0.82rem;">
+        Guide how the AI responds across all models.
+      </p>
+
+      <textarea class="input-textarea" id="systemPromptInput" rows="5" placeholder="You are a brilliant, concise, and helpful assistant..."></textarea>
+
+      <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+        <button class="btn" style="font-size:0.72rem;" onclick="setSystemPreset('You are an expert software engineer. Provide concise, production-ready code with minimal fluff.')">💻 Expert Coder</button>
+        <button class="btn" style="font-size:0.72rem;" onclick="setSystemPreset('You are a rigorous academic researcher. Provide balanced, cited, and critical analysis.')">🎓 Scholar</button>
+        <button class="btn" style="font-size:0.72rem;" onclick="setSystemPreset('You are a creative writer and storytelling mentor with vivid descriptions.')">🎨 Creative Writer</button>
+        <button class="btn" style="font-size:0.72rem;" onclick="setSystemPreset('')">Reset Default</button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" id="cancelSystemPromptBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveSystemPromptBtn">Save Instructions</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toastNotification">
+  <span id="toastMessage">Notification</span>
+</div>
+
+<!-- ==================== SCRIPT ==================== -->
 <script>
-  // ---- Provider registry ----------------------------------------------
-  // type "openai"  -> OpenAI-compatible /chat/completions (messages + choices[0].message.content)
-  // type "gemini"  -> Google Generative Language API (contents/parts, key as query param)
-  // type "cohere"  -> Cohere v2 /chat (messages + message.content[0].text)
-  const PROVIDERS = {
-    groq: {
-      name: 'Groq',
-      type: 'openai',
-      endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-      defaultModel: 'llama-3.3-70b-versatile',
-      keyPlaceholder: 'gsk_...',
-      keyPrefix: 'gsk_',
-      keyUrl: 'https://console.groq.com/keys',
-      keyUrlLabel: 'console.groq.com/keys',
-      note: "It's kept in this tab's memory only — never saved to disk, never sent anywhere but Groq."
+  // -------------------------------------------------------------------------
+  // 1. MASTER MODEL & PROVIDER CATALOG
+  // -------------------------------------------------------------------------
+  const MODEL_CATALOG = [
+    // --- FREE PUBLIC MODELS (No API Key Required) ---
+    {
+      id: 'free-pollinations-reasoning',
+      name: 'Reasoning Fast OSS',
+      provider: 'free',
+      providerName: 'Pollinations REST',
+      badgeClass: 'badge-public',
+      tags: ['free', 'reasoning'],
+      isFree: true,
+      description: 'Zero-setup anonymous 20B reasoning model with step-by-step logic.',
+      type: 'pollinations',
+      internalModel: 'openai-fast'
     },
-    gemini: {
-      name: 'Google Gemini',
+    {
+      id: 'free-pollinations-general',
+      name: 'GPT-OSS 20B',
+      provider: 'free',
+      providerName: 'Pollinations REST',
+      badgeClass: 'badge-public',
+      tags: ['free', 'speed'],
+      isFree: true,
+      description: 'Fast open-weights conversational LLM, zero signup required.',
+      type: 'pollinations',
+      internalModel: 'openai'
+    },
+    {
+      id: 'free-puter-gpt-4o-mini',
+      name: 'GPT-4o Mini (Free)',
+      provider: 'free',
+      providerName: 'Puter Engine',
+      badgeClass: 'badge-openai',
+      tags: ['free', 'speed'],
+      isFree: true,
+      description: 'High-speed OpenAI flagship model via Puter client runtime.',
+      type: 'puter',
+      internalModel: 'gpt-4o-mini'
+    },
+    {
+      id: 'free-puter-gemini-2',
+      name: 'Gemini 2.0 Flash (Free)',
+      provider: 'free',
+      providerName: 'Puter Engine',
+      badgeClass: 'badge-google',
+      tags: ['free', 'google', 'speed'],
+      isFree: true,
+      description: 'Google’s next-gen 2.0 Flash model streamed free via Puter.',
+      type: 'puter',
+      internalModel: 'gemini-2.0-flash'
+    },
+    {
+      id: 'free-puter-deepseek-chat',
+      name: 'DeepSeek V3 (Free)',
+      provider: 'free',
+      providerName: 'Puter Engine',
+      badgeClass: 'badge-deepseek',
+      tags: ['free', 'deepseek', 'coding'],
+      isFree: true,
+      description: 'Flagship open architecture LLM for programming & analysis.',
+      type: 'puter',
+      internalModel: 'deepseek-chat'
+    },
+    {
+      id: 'free-puter-deepseek-reasoner',
+      name: 'DeepSeek R1 (Free)',
+      provider: 'free',
+      providerName: 'Puter Engine',
+      badgeClass: 'badge-deepseek',
+      tags: ['free', 'deepseek', 'reasoning'],
+      isFree: true,
+      description: 'DeepSeek’s cutting-edge open reasoning model via Puter.',
+      type: 'puter',
+      internalModel: 'deepseek-reasoner'
+    },
+    {
+      id: 'free-puter-claude-35',
+      name: 'Claude 3.5 Sonnet (Free)',
+      provider: 'free',
+      providerName: 'Puter Engine',
+      badgeClass: 'badge-anthropic',
+      tags: ['free', 'anthropic'],
+      isFree: true,
+      description: 'Anthropic’s benchmark leader for coding and nuance.',
+      type: 'puter',
+      internalModel: 'claude-3-5-sonnet'
+    },
+    {
+      id: 'free-puter-llama-33',
+      name: 'LLaMA 3.3 70B (Free)',
+      provider: 'free',
+      providerName: 'Puter Engine',
+      badgeClass: 'badge-groq',
+      tags: ['free', 'speed'],
+      isFree: true,
+      description: 'Meta’s flagship open weights 70B model.',
+      type: 'puter',
+      internalModel: 'meta-llama/llama-3.3-70b-instruct'
+    },
+
+    // --- GOOGLE GEMINI OFFICIAL (BYOK) ---
+    {
+      id: 'google-gemini-25-pro',
+      name: 'Gemini 2.5 Pro',
+      provider: 'google',
+      providerName: 'Google Gemini',
+      badgeClass: 'badge-google',
+      tags: ['google', 'reasoning', 'coding'],
+      isFree: false,
+      description: 'Google’s state-of-the-art flagship reasoning & complex task model.',
       type: 'gemini',
-      defaultModel: 'gemini-2.0-flash',
-      keyPlaceholder: 'AIzaSy... (or AQ...)',
-      keyPrefix: '',
-      keyUrl: 'https://aistudio.google.com/apikey',
-      keyUrlLabel: 'aistudio.google.com/apikey',
-      note: "It's kept in this tab's memory only — never saved to disk, never sent anywhere but Google."
+      internalModel: 'gemini-2.5-pro'
     },
-    openai: {
-      name: 'OpenAI',
-      type: 'openai',
-      endpoint: 'https://api.openai.com/v1/chat/completions',
-      defaultModel: 'gpt-4o-mini',
-      keyPlaceholder: 'sk-...',
-      keyPrefix: 'sk-',
-      keyUrl: 'https://platform.openai.com/api-keys',
-      keyUrlLabel: 'platform.openai.com/api-keys',
-      note: "New accounts get a small free trial credit; after that it's pay-as-you-go. Key is kept in this tab's memory only — never saved to disk, never sent anywhere but OpenAI."
+    {
+      id: 'google-gemini-25-flash',
+      name: 'Gemini 2.5 Flash',
+      provider: 'google',
+      providerName: 'Google Gemini',
+      badgeClass: 'badge-google',
+      tags: ['google', 'speed', 'reasoning'],
+      isFree: false,
+      description: 'Next-gen frontier model combining deep thinking with ultra speed.',
+      type: 'gemini',
+      internalModel: 'gemini-2.5-flash'
     },
-    openrouter: {
-      name: 'OpenRouter',
-      type: 'openai',
-      endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-      defaultModel: 'meta-llama/llama-3.1-8b-instruct:free',
-      keyPlaceholder: 'sk-or-v1-...',
-      keyPrefix: 'sk-or-',
-      keyUrl: 'https://openrouter.ai/keys',
-      keyUrlLabel: 'openrouter.ai/keys',
-      note: 'Model names ending in ":free" cost nothing. Key is kept in this tab only.'
+    {
+      id: 'google-gemini-20-flash',
+      name: 'Gemini 2.0 Flash',
+      provider: 'google',
+      providerName: 'Google Gemini',
+      badgeClass: 'badge-google',
+      tags: ['google', 'speed'],
+      isFree: false,
+      description: 'Google’s high-frequency multimodal production model.',
+      type: 'gemini',
+      internalModel: 'gemini-2.0-flash'
     },
-    together: {
-      name: 'Together AI',
-      type: 'openai',
-      endpoint: 'https://api.together.xyz/v1/chat/completions',
-      defaultModel: 'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
-      keyPlaceholder: 'API key',
-      keyPrefix: '',
-      keyUrl: 'https://api.together.ai/settings/api-keys',
-      keyUrlLabel: 'api.together.ai/settings/api-keys',
-      note: "It's kept in this tab's memory only — never saved to disk, never sent anywhere but Together AI."
+    {
+      id: 'google-gemini-20-flash-lite',
+      name: 'Gemini 2.0 Flash Lite',
+      provider: 'google',
+      providerName: 'Google Gemini',
+      badgeClass: 'badge-google',
+      tags: ['google', 'speed'],
+      isFree: false,
+      description: 'Ultra cost-effective, high-throughput Google model.',
+      type: 'gemini',
+      internalModel: 'gemini-2.0-flash-lite'
     },
-    mistral: {
-      name: 'Mistral',
-      type: 'openai',
-      endpoint: 'https://api.mistral.ai/v1/chat/completions',
-      defaultModel: 'mistral-small-latest',
-      keyPlaceholder: 'API key',
-      keyPrefix: '',
-      keyUrl: 'https://console.mistral.ai/api-keys',
-      keyUrlLabel: 'console.mistral.ai/api-keys',
-      note: "It's kept in this tab's memory only — never saved to disk, never sent anywhere but Mistral."
+    {
+      id: 'google-gemini-15-pro',
+      name: 'Gemini 1.5 Pro',
+      provider: 'google',
+      providerName: 'Google Gemini',
+      badgeClass: 'badge-google',
+      tags: ['google', 'reasoning'],
+      isFree: false,
+      description: 'Massive 2-million token context window Google flagship.',
+      type: 'gemini',
+      internalModel: 'gemini-1.5-pro'
     },
-    cohere: {
-      name: 'Cohere',
-      type: 'cohere',
-      endpoint: 'https://api.cohere.com/v2/chat',
-      defaultModel: 'command-r-08-2024',
-      keyPlaceholder: 'API key',
-      keyPrefix: '',
-      keyUrl: 'https://dashboard.cohere.com/api-keys',
-      keyUrlLabel: 'dashboard.cohere.com/api-keys',
-      note: "It's kept in this tab's memory only — never saved to disk, never sent anywhere but Cohere."
+    {
+      id: 'google-gemini-15-flash',
+      name: 'Gemini 1.5 Flash',
+      provider: 'google',
+      providerName: 'Google Gemini',
+      badgeClass: 'badge-google',
+      tags: ['google', 'speed'],
+      isFree: false,
+      description: 'Lightweight, rapid response Gemini production model.',
+      type: 'gemini',
+      internalModel: 'gemini-1.5-flash'
+    },
+
+    // --- GROQ ULTRA FAST (BYOK) ---
+    {
+      id: 'groq-llama-33-70b',
+      name: 'LLaMA 3.3 70B (Groq)',
+      provider: 'groq',
+      providerName: 'Groq Cloud',
+      badgeClass: 'badge-groq',
+      tags: ['groq', 'speed'],
+      isFree: false,
+      description: 'Lightning-fast inference at 300+ tokens/sec on LPU hardware.',
+      type: 'openai-compat',
+      internalModel: 'llama-3.3-70b-versatile',
+      endpoint: 'https://api.groq.com/openai/v1/chat/completions'
+    },
+    {
+      id: 'groq-deepseek-r1-70b',
+      name: 'DeepSeek R1 Distill 70B',
+      provider: 'groq',
+      providerName: 'Groq Cloud',
+      badgeClass: 'badge-groq',
+      tags: ['groq', 'reasoning'],
+      isFree: false,
+      description: 'DeepSeek R1 reasoning capabilities accelerated on Groq LPUs.',
+      type: 'openai-compat',
+      internalModel: 'deepseek-r1-distill-llama-70b',
+      endpoint: 'https://api.groq.com/openai/v1/chat/completions'
+    },
+    {
+      id: 'groq-llama-31-8b',
+      name: 'LLaMA 3.1 8B (Groq)',
+      provider: 'groq',
+      providerName: 'Groq Cloud',
+      badgeClass: 'badge-groq',
+      tags: ['groq', 'speed'],
+      isFree: false,
+      description: 'Sub-second real-time conversational responses.',
+      type: 'openai-compat',
+      internalModel: 'llama-3.1-8b-instant',
+      endpoint: 'https://api.groq.com/openai/v1/chat/completions'
+    },
+
+    // --- OPENAI DIRECT (BYOK) ---
+    {
+      id: 'openai-gpt-4o',
+      name: 'GPT-4o (Omni)',
+      provider: 'openai',
+      providerName: 'OpenAI',
+      badgeClass: 'badge-openai',
+      tags: ['openai', 'flagship'],
+      isFree: false,
+      description: 'OpenAI’s premier multimodal intelligence flagship.',
+      type: 'openai-compat',
+      internalModel: 'gpt-4o',
+      endpoint: 'https://api.openai.com/v1/chat/completions'
+    },
+    {
+      id: 'openai-gpt-4o-mini',
+      name: 'GPT-4o Mini',
+      provider: 'openai',
+      providerName: 'OpenAI',
+      badgeClass: 'badge-openai',
+      tags: ['openai', 'speed'],
+      isFree: false,
+      description: 'Fast, affordable intelligence for lightweight tasks.',
+      type: 'openai-compat',
+      internalModel: 'gpt-4o-mini',
+      endpoint: 'https://api.openai.com/v1/chat/completions'
+    },
+    {
+      id: 'openai-o3-mini',
+      name: 'o3-mini Reasoning',
+      provider: 'openai',
+      providerName: 'OpenAI',
+      badgeClass: 'badge-openai',
+      tags: ['openai', 'reasoning'],
+      isFree: false,
+      description: 'OpenAI’s high-speed mathematical & coding reasoning model.',
+      type: 'openai-compat',
+      internalModel: 'o3-mini',
+      endpoint: 'https://api.openai.com/v1/chat/completions'
+    },
+
+    // --- DEEPSEEK DIRECT (BYOK) ---
+    {
+      id: 'deepseek-r1',
+      name: 'DeepSeek R1 Official',
+      provider: 'deepseek',
+      providerName: 'DeepSeek',
+      badgeClass: 'badge-deepseek',
+      tags: ['deepseek', 'reasoning'],
+      isFree: false,
+      description: 'Official direct DeepSeek R1 reasoning API.',
+      type: 'openai-compat',
+      internalModel: 'deepseek-reasoner',
+      endpoint: 'https://api.deepseek.com/chat/completions'
+    },
+    {
+      id: 'deepseek-v3',
+      name: 'DeepSeek V3 Official',
+      provider: 'deepseek',
+      providerName: 'DeepSeek',
+      badgeClass: 'badge-deepseek',
+      tags: ['deepseek', 'coding'],
+      isFree: false,
+      description: 'Official DeepSeek-V3 general conversation & code API.',
+      type: 'openai-compat',
+      internalModel: 'deepseek-chat',
+      endpoint: 'https://api.deepseek.com/chat/completions'
+    },
+
+    // --- ANTHROPIC CLAUDE (BYOK) ---
+    {
+      id: 'anthropic-claude-37',
+      name: 'Claude 3.7 Sonnet',
+      provider: 'anthropic',
+      providerName: 'Anthropic',
+      badgeClass: 'badge-anthropic',
+      tags: ['anthropic', 'reasoning'],
+      isFree: false,
+      description: 'Anthropic’s hybrid standard & extended thinking model.',
+      type: 'anthropic',
+      internalModel: 'claude-3-7-sonnet-20250219'
+    },
+    {
+      id: 'anthropic-claude-35',
+      name: 'Claude 3.5 Sonnet',
+      provider: 'anthropic',
+      providerName: 'Anthropic',
+      badgeClass: 'badge-anthropic',
+      tags: ['anthropic'],
+      isFree: false,
+      description: 'Gold-standard coding, analysis, and natural dialogue.',
+      type: 'anthropic',
+      internalModel: 'claude-3-5-sonnet-20241022'
+    },
+
+    // --- OPENROUTER FREE ROUTED (BYOK) ---
+    {
+      id: 'openrouter-gemini-free',
+      name: 'Gemini 2.0 Flash (OpenRouter Free)',
+      provider: 'openrouter',
+      providerName: 'OpenRouter',
+      badgeClass: 'badge-openrouter',
+      tags: ['openrouter', 'google', 'free'],
+      isFree: false,
+      description: 'Free tier routing via OpenRouter API key.',
+      type: 'openai-compat',
+      internalModel: 'google/gemini-2.0-flash-exp:free',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions'
+    },
+    {
+      id: 'openrouter-deepseek-free',
+      name: 'DeepSeek R1 (OpenRouter Free)',
+      provider: 'openrouter',
+      providerName: 'OpenRouter',
+      badgeClass: 'badge-openrouter',
+      tags: ['openrouter', 'deepseek', 'free'],
+      isFree: false,
+      description: 'Zero cost token route for DeepSeek R1 on OpenRouter.',
+      type: 'openai-compat',
+      internalModel: 'deepseek/deepseek-r1:free',
+      endpoint: 'https://openrouter.ai/api/v1/chat/completions'
     }
+  ];
+
+  // -------------------------------------------------------------------------
+  // 2. APPLICATION STATE
+  // -------------------------------------------------------------------------
+  let state = {
+    mode: 'free', // 'free' or 'byok'
+    chatMode: 'single', // 'single' or 'multi'
+    selectedModelIds: ['free-pollinations-reasoning'],
+    systemPrompt: '',
+    history: [], // [{ role: 'user'|'assistant', content: '...', modelName?: '...' }]
+    apiKeys: {
+      google: '',
+      groq: '',
+      openai: '',
+      deepseek: '',
+      anthropic: '',
+      openrouter: ''
+    },
+    activeControllers: []
   };
-  const PROVIDER_ORDER = ['groq', 'gemini', 'openai', 'openrouter', 'together', 'mistral', 'cohere'];
 
-  const thread = document.getElementById('thread');
-  const emptyState = document.getElementById('emptyState');
-  const form = document.getElementById('composerForm');
-  const composer = document.getElementById('composer');
+  // Load saved settings from localStorage
+  try {
+    const savedKeys = localStorage.getItem('correspond_keys');
+    if (savedKeys) {
+      state.apiKeys = { ...state.apiKeys, ...JSON.parse(savedKeys) };
+    }
+    const savedSystem = localStorage.getItem('correspond_system');
+    if (savedSystem) state.systemPrompt = savedSystem;
+    const savedSelected = localStorage.getItem('correspond_selected_models');
+    if (savedSelected) {
+      const parsed = JSON.parse(savedSelected);
+      if (Array.isArray(parsed) && parsed.length > 0) state.selectedModelIds = parsed;
+    }
+  } catch (e) {
+    console.warn('LocalStorage error:', e);
+  }
+
+  // -------------------------------------------------------------------------
+  // 3. DOM ELEMENTS
+  // -------------------------------------------------------------------------
+  const chatThread = document.getElementById('chatThread');
+  const emptyHero = document.getElementById('emptyHero');
+  const composerForm = document.getElementById('composerForm');
+  const composerInput = document.getElementById('composerInput');
   const sendBtn = document.getElementById('sendBtn');
-  const keyModal = document.getElementById('keyModal');
-  const keyInput = document.getElementById('keyInput');
-  const keyLabel = document.getElementById('keyLabel');
-  const modelInput = document.getElementById('modelInput');
-  const providerSelect = document.getElementById('providerSelect');
-  const keySubmit = document.getElementById('keySubmit');
-  const keyError = document.getElementById('keyError');
-  const changeKeyBtn = document.getElementById('changeKeyBtn');
-  const modalDesc = document.getElementById('modalDesc');
-  const keyHint = document.getElementById('keyHint');
-  const keyUrlLink = document.getElementById('keyUrlLink');
-  const subtitle = document.getElementById('changeKeyBtn');
+  const stopGenBtn = document.getElementById('stopGenBtn');
+  const charCounter = document.getElementById('charCounter');
+  const footerModelIndicator = document.getElementById('footerModelIndicator');
 
-  let apiKey = null;
-  let providerId = 'groq';
-  let model = PROVIDERS.groq.defaultModel;
-  let history = [];
+  const singleModeBtn = document.getElementById('singleModeBtn');
+  const multiModeBtn = document.getElementById('multiModeBtn');
+  const modeStatusBadge = document.getElementById('modeStatusBadge');
+  const modeSwitchBtn = document.getElementById('modeSwitchBtn');
+  const modeSwitchIcon = document.getElementById('modeSwitchIcon');
+  const modeSwitchText = document.getElementById('modeSwitchText');
+  const openModelsBtn = document.getElementById('openModelsBtn');
+  const selectedCountBadge = document.getElementById('selectedCountBadge');
+  const activeModelChips = document.getElementById('activeModelChips');
+  const quickArenaPresetBtn = document.getElementById('quickArenaPresetBtn');
 
-  // Build provider dropdown
-  PROVIDER_ORDER.forEach(id => {
-    const opt = document.createElement('option');
-    opt.value = id;
-    opt.textContent = PROVIDERS[id].name;
-    providerSelect.appendChild(opt);
+  // Modals
+  const modelsModal = document.getElementById('modelsModal');
+  const closeModelsModalBtn = document.getElementById('closeModelsModalBtn');
+  const saveModelsModalBtn = document.getElementById('saveModelsModalBtn');
+  const modelsGridContainer = document.getElementById('modelsGridContainer');
+  const modelSearchInput = document.getElementById('modelSearchInput');
+  const modalSelectedCountText = document.getElementById('modalSelectedCountText');
+
+  const keysModal = document.getElementById('keysModal');
+  const closeKeysModalBtn = document.getElementById('closeKeysModalBtn');
+  const saveKeysBtn = document.getElementById('saveKeysBtn');
+  const clearAllKeysBtn = document.getElementById('clearAllKeysBtn');
+
+  const systemPromptBtn = document.getElementById('systemPromptBtn');
+  const systemPromptModal = document.getElementById('systemPromptModal');
+  const closeSystemPromptModalBtn = document.getElementById('closeSystemPromptModalBtn');
+  const cancelSystemPromptBtn = document.getElementById('cancelSystemPromptBtn');
+  const saveSystemPromptBtn = document.getElementById('saveSystemPromptBtn');
+  const systemPromptInput = document.getElementById('systemPromptInput');
+
+  const exportBtn = document.getElementById('exportBtn');
+  const clearChatBtn = document.getElementById('clearChatBtn');
+  const toastNotification = document.getElementById('toastNotification');
+  const toastMessage = document.getElementById('toastMessage');
+
+  // -------------------------------------------------------------------------
+  // 4. TOAST HELPER
+  // -------------------------------------------------------------------------
+  let toastTimer = null;
+  function showToast(msg) {
+    clearTimeout(toastTimer);
+    toastMessage.textContent = msg;
+    toastNotification.classList.add('show');
+    toastTimer = setTimeout(() => {
+      toastNotification.classList.remove('show');
+    }, 2800);
+  }
+
+  // -------------------------------------------------------------------------
+  // 5. RENDER UI COMPONENTS & CHIPS
+  // -------------------------------------------------------------------------
+  function updateUIState() {
+    // Mode badge
+    if (state.mode === 'free') {
+      modeStatusBadge.textContent = '⚡ Free Public Mode';
+      modeStatusBadge.className = 'badge-tag badge-free';
+      modeSwitchIcon.textContent = '🔑';
+      modeSwitchText.textContent = 'Use API Keys';
+    } else {
+      modeStatusBadge.textContent = '🔑 BYOK Key Mode';
+      modeStatusBadge.className = 'badge-tag badge-byok';
+      modeSwitchIcon.textContent = '⚡';
+      modeSwitchText.textContent = 'Free Mode';
+    }
+
+    // Chat Mode pills
+    if (state.chatMode === 'single') {
+      singleModeBtn.classList.add('active');
+      multiModeBtn.classList.remove('active');
+    } else {
+      singleModeBtn.classList.remove('active');
+      multiModeBtn.classList.add('active');
+    }
+
+    // Ensure at least 1 model is selected
+    if (state.selectedModelIds.length === 0) {
+      state.selectedModelIds = [state.mode === 'free' ? 'free-pollinations-reasoning' : 'google-gemini-25-flash'];
+    }
+
+    // Update count badges
+    const count = state.selectedModelIds.length;
+    selectedCountBadge.textContent = count;
+    modalSelectedCountText.textContent = count;
+
+    // Render active chips in subbar
+    activeModelChips.innerHTML = '';
+    state.selectedModelIds.forEach(id => {
+      const model = MODEL_CATALOG.find(m => m.id === id);
+      if (!model) return;
+      const chip = document.createElement('div');
+      chip.className = 'model-chip';
+      chip.innerHTML = `
+        <span class="dot"></span>
+        <span>${model.name}</span>
+        ${state.selectedModelIds.length > 1 ? `<span class="remove-chip" data-id="${id}" title="Remove model">&times;</span>` : ''}
+      `;
+      activeModelChips.appendChild(chip);
+    });
+
+    // Update footer indicator
+    if (state.chatMode === 'single') {
+      const m = MODEL_CATALOG.find(m => m.id === state.selectedModelIds[0]);
+      footerModelIndicator.innerHTML = `<span>💬 Active: <strong>${m ? m.name : 'AI'}</strong></span>`;
+    } else {
+      footerModelIndicator.innerHTML = `<span>🔀 Comparing <strong>${count} models</strong> in parallel</span>`;
+    }
+
+    // Sync localStorage
+    try {
+      localStorage.setItem('correspond_selected_models', JSON.stringify(state.selectedModelIds));
+    } catch (e) {}
+  }
+
+  // Chip remove click handler
+  activeModelChips.addEventListener('click', (e) => {
+    if (e.target.classList.contains('remove-chip')) {
+      const id = e.target.getAttribute('data-id');
+      if (state.selectedModelIds.length > 1) {
+        state.selectedModelIds = state.selectedModelIds.filter(mId => mId !== id);
+        updateUIState();
+        renderModelsGrid();
+      }
+    }
   });
 
-  function refreshModalForProvider(id) {
-    const p = PROVIDERS[id];
-    keyInput.placeholder = p.keyPlaceholder;
-    keyLabel.textContent = p.name + ' API key';
-    modelInput.placeholder = p.defaultModel;
-    modelInput.value = (providerId === id && model) ? model : p.defaultModel;
-    modalDesc.textContent = "Pick a provider and paste your free API key to start. " + p.note;
-    keyHint.innerHTML = `No key yet? Get a free one at <a href="${p.keyUrl}" target="_blank" rel="noopener">${p.keyUrlLabel}</a>.`;
-    keyError.textContent = '';
+  // -------------------------------------------------------------------------
+  // 6. RENDER MODELS IN MODAL
+  // -------------------------------------------------------------------------
+  let activeFilter = 'all';
+
+  function renderModelsGrid() {
+    modelsGridContainer.innerHTML = '';
+    const query = modelSearchInput.value.toLowerCase().trim();
+
+    MODEL_CATALOG.forEach(m => {
+      // Filter logic
+      const matchesFilter = (activeFilter === 'all') ||
+        (activeFilter === 'free' && m.isFree) ||
+        (activeFilter === m.provider) ||
+        (m.tags && m.tags.includes(activeFilter));
+
+      const matchesSearch = !query ||
+        m.name.toLowerCase().includes(query) ||
+        m.providerName.toLowerCase().includes(query) ||
+        m.description.toLowerCase().includes(query);
+
+      if (!matchesFilter || !matchesSearch) return;
+
+      const isChecked = state.selectedModelIds.includes(m.id);
+
+      const card = document.createElement('label');
+      card.className = `model-select-card ${isChecked ? 'checked' : ''}`;
+      card.innerHTML = `
+        <input type="checkbox" data-model-id="${m.id}" ${isChecked ? 'checked' : ''}>
+        <div class="model-info-block">
+          <div class="model-title-line">
+            <span class="model-name">${m.name}</span>
+            <span class="model-badge ${m.badgeClass}">${m.isFree ? 'FREE' : m.providerName}</span>
+          </div>
+          <div class="model-desc-text">${m.description}</div>
+          <div class="model-badges-row">
+            ${m.tags.map(t => `<span style="font-size:0.65rem; color:var(--text-muted); background:var(--bg-base); padding:1px 5px; border-radius:3px;">#${t}</span>`).join('')}
+          </div>
+        </div>
+      `;
+
+      card.querySelector('input').addEventListener('change', (e) => {
+        const id = e.target.getAttribute('data-model-id');
+        if (state.chatMode === 'single') {
+          // In single mode, selecting unchecks others
+          state.selectedModelIds = [id];
+          renderModelsGrid();
+        } else {
+          // Multi mode checkbox
+          if (e.target.checked) {
+            if (!state.selectedModelIds.includes(id)) state.selectedModelIds.push(id);
+          } else {
+            if (state.selectedModelIds.length > 1) {
+              state.selectedModelIds = state.selectedModelIds.filter(x => x !== id);
+            } else {
+              e.target.checked = true;
+              showToast('At least one model must be selected!');
+            }
+          }
+          card.classList.toggle('checked', e.target.checked);
+        }
+        modalSelectedCountText.textContent = state.selectedModelIds.length;
+      });
+
+      modelsGridContainer.appendChild(card);
+    });
   }
 
-  providerSelect.addEventListener('change', () => {
-    refreshModalForProvider(providerSelect.value);
+  // Model filter tabs
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeFilter = tab.getAttribute('data-filter');
+      renderModelsGrid();
+    });
   });
 
-  function openKeyModal() {
-    keyModal.style.display = 'flex';
-    providerSelect.value = providerId;
-    keyInput.value = (apiKey && providerSelect.value === providerId) ? '' : '';
-    refreshModalForProvider(providerId);
-    setTimeout(() => keyInput.focus(), 50);
+  modelSearchInput.addEventListener('input', renderModelsGrid);
+
+  // Quick preset buttons
+  document.getElementById('presetSelectFreeAll').addEventListener('click', () => {
+    state.selectedModelIds = MODEL_CATALOG.filter(m => m.isFree).map(m => m.id);
+    state.chatMode = 'multi';
+    updateUIState();
+    renderModelsGrid();
+    showToast('Checked all free models!');
+  });
+
+  document.getElementById('presetSelectTopArena').addEventListener('click', () => {
+    state.selectedModelIds = ['free-pollinations-reasoning', 'free-puter-gemini-2', 'free-puter-deepseek-reasoner'];
+    state.chatMode = 'multi';
+    updateUIState();
+    renderModelsGrid();
+    showToast('Loaded Top 3 Arena comparison!');
+  });
+
+  quickArenaPresetBtn.addEventListener('click', () => {
+    state.selectedModelIds = ['free-pollinations-reasoning', 'free-puter-gemini-2', 'free-puter-deepseek-reasoner'];
+    state.chatMode = 'multi';
+    updateUIState();
+    showToast('Comparing Top 3 Models!');
+  });
+
+  document.getElementById('presetSelectGoogle').addEventListener('click', () => {
+    state.selectedModelIds = ['google-gemini-25-pro', 'google-gemini-25-flash', 'google-gemini-20-flash'];
+    state.chatMode = 'multi';
+    updateUIState();
+    renderModelsGrid();
+    showToast('Loaded Google Gemini flagship suite!');
+  });
+
+  document.getElementById('presetClearSelection').addEventListener('click', () => {
+    state.selectedModelIds = ['free-pollinations-reasoning'];
+    renderModelsGrid();
+    showToast('Selection reset to default.');
+  });
+
+  // -------------------------------------------------------------------------
+  // 7. MODAL EVENTS
+  // -------------------------------------------------------------------------
+  openModelsBtn.addEventListener('click', () => {
+    renderModelsGrid();
+    modelsModal.classList.add('open');
+  });
+  closeModelsModalBtn.addEventListener('click', () => modelsModal.classList.remove('open'));
+  saveModelsModalBtn.addEventListener('click', () => {
+    modelsModal.classList.remove('open');
+    updateUIState();
+    showToast(`Updated to ${state.selectedModelIds.length} model(s)!`);
+  });
+
+  // Mode Toggle (Single vs Multi)
+  singleModeBtn.addEventListener('click', () => {
+    state.chatMode = 'single';
+    if (state.selectedModelIds.length > 1) {
+      state.selectedModelIds = [state.selectedModelIds[0]];
+    }
+    updateUIState();
+    showToast('Switched to Single Chat mode.');
+  });
+
+  multiModeBtn.addEventListener('click', () => {
+    state.chatMode = 'multi';
+    if (state.selectedModelIds.length === 1) {
+      // Auto-suggest companion model for comparison
+      const second = MODEL_CATALOG.find(m => m.id !== state.selectedModelIds[0] && m.isFree);
+      if (second) state.selectedModelIds.push(second.id);
+    }
+    updateUIState();
+    showToast('Switched to Multi-Model Arena! Responses will compare in parallel.');
+  });
+
+  // Mode Switch (Free vs BYOK)
+  modeSwitchBtn.addEventListener('click', () => {
+    if (state.mode === 'free') {
+      keysModal.classList.add('open');
+    } else {
+      state.mode = 'free';
+      updateUIState();
+      showToast('Switched to Free Direct Mode (Zero API Keys needed).');
+    }
+  });
+
+  // API Keys modal
+  closeKeysModalBtn.addEventListener('click', () => keysModal.classList.remove('open'));
+
+  // Prepopulate key inputs
+  function populateKeyInputs() {
+    document.getElementById('keyGoogle').value = state.apiKeys.google || '';
+    document.getElementById('keyGroq').value = state.apiKeys.groq || '';
+    document.getElementById('keyOpenAI').value = state.apiKeys.openai || '';
+    document.getElementById('keyDeepSeek').value = state.apiKeys.deepseek || '';
+    document.getElementById('keyAnthropic').value = state.apiKeys.anthropic || '';
+    document.getElementById('keyOpenRouter').value = state.apiKeys.openrouter || '';
   }
 
-  function closeKeyModal() {
-    keyModal.style.display = 'none';
-    composer.disabled = false;
-    sendBtn.disabled = false;
-    composer.focus();
+  saveKeysBtn.addEventListener('click', () => {
+    state.apiKeys.google = document.getElementById('keyGoogle').value.trim();
+    state.apiKeys.groq = document.getElementById('keyGroq').value.trim();
+    state.apiKeys.openai = document.getElementById('keyOpenAI').value.trim();
+    state.apiKeys.deepseek = document.getElementById('keyDeepSeek').value.trim();
+    state.apiKeys.anthropic = document.getElementById('keyAnthropic').value.trim();
+    state.apiKeys.openrouter = document.getElementById('keyOpenRouter').value.trim();
+
+    if (document.getElementById('rememberKeysCheckbox').checked) {
+      try {
+        localStorage.setItem('correspond_keys', JSON.stringify(state.apiKeys));
+      } catch (e) {}
+    }
+
+    state.mode = 'byok';
+    keysModal.classList.remove('open');
+    updateUIState();
+    showToast('API keys saved! BYOK mode active.');
+  });
+
+  clearAllKeysBtn.addEventListener('click', () => {
+    state.apiKeys = { google: '', groq: '', openai: '', deepseek: '', anthropic: '', openrouter: '' };
+    try { localStorage.removeItem('correspond_keys'); } catch (e) {}
+    populateKeyInputs();
+    state.mode = 'free';
+    keysModal.classList.remove('open');
+    updateUIState();
+    showToast('Stored keys cleared. Reverted to Free mode.');
+  });
+
+  // System Prompt Modal
+  systemPromptBtn.addEventListener('click', () => {
+    systemPromptInput.value = state.systemPrompt;
+    systemPromptModal.classList.add('open');
+  });
+  closeSystemPromptModalBtn.addEventListener('click', () => systemPromptModal.classList.remove('open'));
+  cancelSystemPromptBtn.addEventListener('click', () => systemPromptModal.classList.remove('open'));
+  saveSystemPromptBtn.addEventListener('click', () => {
+    state.systemPrompt = systemPromptInput.value.trim();
+    try { localStorage.setItem('correspond_system', state.systemPrompt); } catch (e) {}
+    systemPromptModal.classList.remove('open');
+    showToast(state.systemPrompt ? 'System instructions applied!' : 'System prompt cleared.');
+  });
+
+  function setSystemPreset(txt) {
+    systemPromptInput.value = txt;
   }
 
-  keySubmit.addEventListener('click', () => {
-    const val = keyInput.value.trim();
-    const p = PROVIDERS[providerSelect.value];
-    if (val.length < 8 || (p.keyPrefix && !val.startsWith(p.keyPrefix))) {
-      keyError.textContent = p.keyPrefix
-        ? `That doesn't look like a ${p.name} key — it should start with "${p.keyPrefix}".`
-        : `That doesn't look like a valid ${p.name} key.`;
+  // Clear Chat
+  clearChatBtn.addEventListener('click', () => {
+    if (confirm('Clear the current conversation thread?')) {
+      state.history = [];
+      chatThread.innerHTML = '';
+      chatThread.appendChild(emptyHero);
+      showToast('Chat history cleared.');
+    }
+  });
+
+  // Export Chat
+  exportBtn.addEventListener('click', () => {
+    if (state.history.length === 0) {
+      showToast('No chat history to export.');
       return;
     }
-    providerId = providerSelect.value;
-    apiKey = val;
-    model = modelInput.value.trim() || p.defaultModel;
-    subtitle.textContent = providerId + ' · ' + model;
-    closeKeyModal();
+    let md = `# Correspond AI Chat Export\n_Date: ${new Date().toLocaleString()}_\n\n---\n\n`;
+    state.history.forEach(item => {
+      if (item.role === 'user') {
+        md += `### 👤 User:\n${item.content}\n\n`;
+      } else {
+        md += `### 🤖 ${item.modelName || 'Assistant'}:\n${item.content}\n\n---\n\n`;
+      }
+    });
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `correspond-chat-${Date.now()}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Chat exported to Markdown file!');
   });
 
-  keyInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') keySubmit.click();
+  // -------------------------------------------------------------------------
+  // 8. MARKDOWN & CODE FORMATTER (Lightweight, robust, zero external crash)
+  // -------------------------------------------------------------------------
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function renderMarkdown(text) {
+    if (!text) return '';
+    let raw = text;
+
+    // Code blocks ```lang ... ```
+    raw = raw.replace(/```([a-zA-Z0-9_\-#+.]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+      const language = lang.trim() || 'plaintext';
+      const escapedCode = escapeHtml(code.trim());
+      const codeId = 'code_' + Math.random().toString(36).substring(2, 9);
+      return `
+        <div class="code-block-wrapper">
+          <pre><div class="code-block-header"><span>${language}</span><button class="copy-code-btn" onclick="copyCodeBlock('${codeId}')"><span>📋</span> Copy</button></div><code id="${codeId}">${escapedCode}</code></pre>
+        </div>
+      `;
+    });
+
+    // Inline code `...`
+    raw = raw.replace(/`([^`\n]+)`/g, (match, code) => `<code>${escapeHtml(code)}</code>`);
+
+    // Headers
+    raw = raw.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    raw = raw.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+    raw = raw.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+    // Bold & Italics
+    raw = raw.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    raw = raw.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    raw = raw.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    // Blockquotes
+    raw = raw.replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>');
+
+    // Unordered lists
+    raw = raw.replace(/^\s*[-*]\s+(.*$)/gim, '<li>$1</li>');
+    raw = raw.replace(/(<li>[\s\S]*?<\/li>)/gim, '<ul>$1</ul>');
+
+    // Paragraph breaks
+    raw = raw.replace(/\n\n/g, '</p><p>');
+    raw = raw.replace(/\n/g, '<br>');
+
+    return `<p>${raw}</p>`;
+  }
+
+  window.copyCodeBlock = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    navigator.clipboard.writeText(el.innerText).then(() => {
+      showToast('Code copied to clipboard!');
+    });
+  };
+
+  window.copyCardText = function(btn) {
+    const card = btn.closest('.ai-card');
+    if (!card) return;
+    const body = card.querySelector('.ai-card-body');
+    if (!body) return;
+    navigator.clipboard.writeText(body.innerText).then(() => {
+      showToast('Response copied to clipboard!');
+    });
+  };
+
+  // -------------------------------------------------------------------------
+  // 9. API DISPATCHERS & FETCH RUNTIME
+  // -------------------------------------------------------------------------
+
+  // A. Pollinations Free Text REST
+  async function callPollinations(internalModel, messages, signal) {
+    const res = await fetch('https://text.pollinations.ai/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: messages,
+        model: internalModel || 'openai-fast'
+      }),
+      signal: signal
+    });
+    if (!res.ok) {
+      throw new Error(`Pollinations API HTTP ${res.status}`);
+    }
+    const text = await res.text();
+    return text;
+  }
+
+  // B. Puter.js Free In-Browser Inference
+  async function callPuter(internalModel, messages) {
+    if (!window.puter || !window.puter.ai || typeof window.puter.ai.chat !== 'function') {
+      throw new Error('Puter.js library not loaded in browser');
+    }
+    const resp = await window.puter.ai.chat(messages, { model: internalModel });
+    if (typeof resp === 'string') return resp;
+    if (resp && resp.message && resp.message.content) return resp.message.content;
+    if (resp && resp.text) return resp.text;
+    return JSON.stringify(resp);
+  }
+
+  // C. Google Gemini Official v1beta REST
+  async function callGoogleGemini(modelName, messages, apiKey, signal) {
+    if (!apiKey) {
+      throw new Error('Google Gemini API Key is missing. Click "🔑 Use API Keys" to set your key.');
+    }
+
+    // Format Gemini request contents
+    const contents = [];
+    messages.forEach(m => {
+      if (m.role === 'system') return; // Handled in system_instruction
+      contents.push({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      });
+    });
+
+    const payload = { contents };
+
+    // System instruction support
+    if (state.systemPrompt) {
+      payload.system_instruction = {
+        parts: [{ text: state.systemPrompt }]
+      };
+    }
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: signal
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Google API HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const candidate = data.candidates?.[0];
+    if (!candidate || !candidate.content || !candidate.content.parts) {
+      return '(Empty response from Gemini)';
+    }
+
+    // Join all parts (handles thinking and text parts)
+    return candidate.content.parts.map(p => p.text || '').join('');
+  }
+
+  // D. OpenAI-Compatible Standard (Groq, OpenAI, DeepSeek, OpenRouter)
+  async function callOpenAICompat(endpoint, modelName, messages, apiKey, signal) {
+    if (!apiKey) {
+      throw new Error(`API key missing for ${modelName}. Configure in "🔑 Use API Keys".`);
+    }
+
+    const fullMessages = [];
+    if (state.systemPrompt) {
+      fullMessages.push({ role: 'system', content: state.systemPrompt });
+    }
+    messages.forEach(m => fullMessages.push({ role: m.role, content: m.content }));
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: fullMessages
+      }),
+      signal: signal
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || err.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || '(Empty response)';
+  }
+
+  // E. Anthropic Messages API
+  async function callAnthropic(modelName, messages, apiKey, signal) {
+    if (!apiKey) {
+      throw new Error('Anthropic API key missing. Configure in "🔑 Use API Keys".');
+    }
+
+    const chatMessages = messages
+      .filter(m => m.role !== 'system')
+      .map(m => ({ role: m.role, content: m.content }));
+
+    const payload = {
+      model: modelName,
+      max_tokens: 4096,
+      messages: chatMessages
+    };
+    if (state.systemPrompt) payload.system = state.systemPrompt;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'dangerously-allow-browser': 'true'
+      },
+      body: JSON.stringify(payload),
+      signal: signal
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Anthropic HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.content?.[0]?.text || '(Empty response)';
+  }
+
+  // Master model caller with fallback logic
+  async function queryModel(modelDef, messages, signal) {
+    if (modelDef.type === 'pollinations') {
+      return await callPollinations(modelDef.internalModel, messages, signal);
+    }
+
+    if (modelDef.type === 'puter') {
+      try {
+        return await callPuter(modelDef.internalModel, messages);
+      } catch (err) {
+        console.warn(`Puter call failed for ${modelDef.name}, falling back to Pollinations:`, err);
+        return await callPollinations('openai-fast', messages, signal);
+      }
+    }
+
+    if (modelDef.type === 'gemini') {
+      return await callGoogleGemini(modelDef.internalModel, messages, state.apiKeys.google, signal);
+    }
+
+    if (modelDef.type === 'openai-compat') {
+      let key = '';
+      if (modelDef.provider === 'groq') key = state.apiKeys.groq;
+      else if (modelDef.provider === 'openai') key = state.apiKeys.openai;
+      else if (modelDef.provider === 'deepseek') key = state.apiKeys.deepseek;
+      else if (modelDef.provider === 'openrouter') key = state.apiKeys.openrouter;
+      return await callOpenAICompat(modelDef.endpoint, modelDef.internalModel, messages, key, signal);
+    }
+
+    if (modelDef.type === 'anthropic') {
+      return await callAnthropic(modelDef.internalModel, messages, state.apiKeys.anthropic, signal);
+    }
+
+    throw new Error(`Unsupported model provider type: ${modelDef.type}`);
+  }
+
+  // -------------------------------------------------------------------------
+  // 10. SUBMIT & MULTI-MODEL COMPARISON ARENA FLOW
+  // -------------------------------------------------------------------------
+  window.insertPrompt = function(txt) {
+    composerInput.value = txt;
+    composerInput.dispatchEvent(new Event('input'));
+    composerForm.requestSubmit();
+  };
+
+  composerInput.addEventListener('input', () => {
+    composerInput.style.height = 'auto';
+    composerInput.style.height = Math.min(composerInput.scrollHeight, 160) + 'px';
+    charCounter.textContent = `${composerInput.value.length} characters`;
   });
 
-  changeKeyBtn.addEventListener('click', openKeyModal);
-
-  composer.addEventListener('input', () => {
-    composer.style.height = 'auto';
-    composer.style.height = Math.min(composer.scrollHeight, 140) + 'px';
-  });
-
-  composer.addEventListener('keydown', (e) => {
+  composerInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      form.requestSubmit();
+      composerForm.requestSubmit();
     }
   });
 
-  function addMessage(role, text) {
-    if (emptyState) emptyState.remove();
-    const msg = document.createElement('div');
-    msg.className = 'msg ' + role;
-    msg.innerHTML = `
-      <div class="label"><span class="seal"></span>${role === 'user' ? 'You' : 'Reply'}</div>
-      <div class="bubble"></div>
-    `;
-    msg.querySelector('.bubble').textContent = text;
-    thread.appendChild(msg);
-    thread.scrollTop = thread.scrollHeight;
-    return msg;
-  }
-
-  function addTyping() {
-    const msg = document.createElement('div');
-    msg.className = 'msg ai';
-    msg.id = 'typingIndicator';
-    msg.innerHTML = `
-      <div class="label"><span class="seal"></span>Reply</div>
-      <div class="typing"><span></span><span></span><span></span></div>
-    `;
-    thread.appendChild(msg);
-    thread.scrollTop = thread.scrollHeight;
-  }
-
-  function removeTyping() {
-    const el = document.getElementById('typingIndicator');
-    if (el) el.remove();
-  }
-
-  form.addEventListener('submit', async (e) => {
+  composerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const text = composer.value.trim();
-    if (!text || !apiKey) return;
+    const query = composerInput.value.trim();
+    if (!query) return;
 
-    addMessage('user', text);
-    history.push({ role: 'user', content: text });
-    composer.value = '';
-    composer.style.height = 'auto';
-    sendBtn.disabled = true;
-    addTyping();
+    // Check selected models
+    const selectedModels = state.selectedModelIds
+      .map(id => MODEL_CATALOG.find(m => m.id === id))
+      .filter(Boolean);
 
-    try {
-      const p = PROVIDERS[providerId];
-      let url, headers, body;
-
-      if (p.type === 'gemini') {
-        url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-        headers = { 'Content-Type': 'application/json' };
-        body = JSON.stringify({
-          contents: history.map(m => ({
-            role: m.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: m.content }]
-          }))
-        });
-      } else if (p.type === 'cohere') {
-        url = p.endpoint;
-        headers = {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + apiKey
-        };
-        body = JSON.stringify({ model: model, messages: history });
-      } else {
-        // OpenAI-compatible: groq, openrouter, together, mistral
-        url = p.endpoint;
-        headers = {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + apiKey
-        };
-        body = JSON.stringify({ model: model, messages: history });
-      }
-
-      const res = await fetch(url, { method: 'POST', headers, body });
-
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => ({}));
-        const msg = errBody.error?.message || errBody.message || ('HTTP ' + res.status);
-        throw new Error(msg);
-      }
-
-      const data = await res.json();
-      let replyText = '(empty response)';
-      if (p.type === 'gemini') {
-        replyText = data.candidates?.[0]?.content?.parts?.map(part => part.text).join('') ?? replyText;
-      } else if (p.type === 'cohere') {
-        replyText = data.message?.content?.[0]?.text ?? data.text ?? replyText;
-      } else {
-        replyText = data.choices?.[0]?.message?.content ?? replyText;
-      }
-
-      removeTyping();
-      addMessage('ai', replyText);
-      history.push({ role: 'assistant', content: replyText });
-    } catch (err) {
-      removeTyping();
-      addMessage('ai', 'Error reaching ' + PROVIDERS[providerId].name + ': ' + err.message);
-      console.error(err);
-    } finally {
-      sendBtn.disabled = false;
-      composer.focus();
+    if (selectedModels.length === 0) {
+      showToast('Please select at least one model to chat!');
+      openModelsBtn.click();
+      return;
     }
+
+    // Clear empty hero
+    if (emptyHero && emptyHero.parentNode) {
+      emptyHero.remove();
+    }
+
+    // Reset composer
+    composerInput.value = '';
+    composerInput.style.height = 'auto';
+    charCounter.textContent = '0 characters';
+    sendBtn.disabled = true;
+    stopGenBtn.style.display = 'inline-flex';
+
+    // 1. Create User Message Bubble
+    const msgGroup = document.createElement('div');
+    msgGroup.className = 'msg-group';
+
+    const userRow = document.createElement('div');
+    userRow.className = 'user-msg-row';
+    userRow.innerHTML = `
+      <div class="user-bubble">
+        <div class="user-meta">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+        <div>${escapeHtml(query)}</div>
+      </div>
+    `;
+    msgGroup.appendChild(userRow);
+
+    // Save user message to history
+    state.history.push({ role: 'user', content: query });
+
+    // 2. Create AI Response Container (Single vs Multi Grid)
+    const aiContainer = document.createElement('div');
+    const cols = Math.min(selectedModels.length, 3);
+    aiContainer.className = `ai-response-container grid-${cols}`;
+
+    // Create cards for each model
+    const modelCardRefs = {};
+
+    selectedModels.forEach(m => {
+      const card = document.createElement('div');
+      card.className = 'ai-card';
+      card.id = `card_${m.id}_${Date.now()}`;
+      card.innerHTML = `
+        <div class="ai-card-header">
+          <div class="ai-card-model">
+            <span>${m.name}</span>
+            <span class="model-badge ${m.badgeClass}">${m.isFree ? 'FREE' : m.providerName}</span>
+          </div>
+          <div class="ai-card-meta">
+            <span class="status-pill loading" id="status_${card.id}">
+              <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:currentColor;"></span> Thinking...
+            </span>
+            <button class="btn" style="padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="copyCardText(this)" title="Copy this response">
+              📋
+            </button>
+          </div>
+        </div>
+        <div class="ai-card-body" id="body_${card.id}">
+          <div class="thinking-indicator">
+            <div class="skeleton-line" style="width: 85%;"></div>
+            <div class="skeleton-line" style="width: 95%;"></div>
+            <div class="skeleton-line" style="width: 60%;"></div>
+          </div>
+        </div>
+      `;
+      aiContainer.appendChild(card);
+      modelCardRefs[m.id] = { card, startTime: Date.now() };
+    });
+
+    msgGroup.appendChild(aiContainer);
+    chatThread.appendChild(msgGroup);
+    chatThread.scrollTop = chatThread.scrollHeight;
+
+    // 3. Dispatch Parallel Queries
+    const controller = new AbortController();
+    state.activeControllers.push(controller);
+
+    const historyForQuery = [...state.history];
+
+    const tasks = selectedModels.map(async (m) => {
+      const ref = modelCardRefs[m.id];
+      const statusEl = document.getElementById(`status_${ref.card.id}`);
+      const bodyEl = document.getElementById(`body_${ref.card.id}`);
+
+      try {
+        const reply = await queryModel(m, historyForQuery, controller.signal);
+        const duration = ((Date.now() - ref.startTime) / 1000).toFixed(1);
+
+        statusEl.className = 'status-pill done';
+        statusEl.innerHTML = `✓ ${duration}s`;
+
+        bodyEl.innerHTML = renderMarkdown(reply);
+        state.history.push({ role: 'assistant', content: reply, modelName: m.name });
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          statusEl.className = 'status-pill';
+          statusEl.innerHTML = '⏹ Stopped';
+          bodyEl.innerHTML = '<span style="color:var(--text-muted); font-style:italic;">Generation stopped.</span>';
+        } else {
+          statusEl.className = 'status-pill error';
+          statusEl.innerHTML = '✗ Failed';
+          bodyEl.innerHTML = `
+            <div style="color:var(--rose); font-size:0.85rem; padding:0.5rem 0;">
+              <strong>Error:</strong> ${escapeHtml(err.message)}
+            </div>
+            ${m.isFree ? `<div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.3rem;">Check internet connection or try another free model.</div>` : ''}
+          `;
+        }
+      }
+    });
+
+    stopGenBtn.onclick = () => {
+      controller.abort();
+      showToast('Generation cancelled.');
+    };
+
+    await Promise.allSettled(tasks);
+
+    // Teardown
+    sendBtn.disabled = false;
+    stopGenBtn.style.display = 'none';
+    state.activeControllers = state.activeControllers.filter(c => c !== controller);
+    chatThread.scrollTop = chatThread.scrollHeight;
+    composerInput.focus();
   });
 
-  openKeyModal();
+  // -------------------------------------------------------------------------
+  // 11. INITIALIZATION
+  // -------------------------------------------------------------------------
+  populateKeyInputs();
+  updateUIState();
 </script>
-
 </body>
 </html>
